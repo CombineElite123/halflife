@@ -875,7 +875,37 @@ BOOL FEnvSoundInRange(entvars_t *pev, entvars_t *pevTarget, float *pflRange)
 		*pflRange = flRange;
 
 	return TRUE;
-}
+if ( pSoundSource )
+	{
+		if ( flags == SND_STOP )
+		{
+			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile, 
+						0, SNDLVL_NONE, flags, 0);
+			m_fActive = false;
+		}
+		else
+		{
+			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile, 
+				(m_dpv.vol * 0.01), m_iSoundLevel, flags, m_dpv.pitch);
+
+			// Only mark active if this is a looping sound.
+			// If not looping, each trigger will cause the sound to play.
+			// If the sound is still playing from a previous trigger press, 
+			// it will be shut off and then restarted.
+			if ( m_fLooping )
+				m_fActive = true;
+		}
+	}	
+	else
+	{
+		if ( ( flags == SND_STOP ) && 
+			( m_nSoundSourceEntIndex != -1 ) )
+		{
+			UTIL_EmitAmbientSound(m_nSoundSourceEntIndex, GetAbsOrigin(), szSoundFile, 
+					0, SNDLVL_NONE, flags, 0);
+			m_fActive = false;
+		}
+	}
 
 //
 // A client that is visible and in range of a sound entity will
